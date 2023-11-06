@@ -1,0 +1,56 @@
+package codeSoft;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.json.JSONObject;
+
+public class CurrencyConverter {
+    public static void main(String[] args) {
+        try {
+            // Step 1: Allow the user to choose base and target currencies
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("Enter the base currency (e.g., USD): ");
+            String baseCurrency = reader.readLine();
+            
+            System.out.print("Enter the target currency (e.g., EUR): ");
+            String targetCurrency = reader.readLine();
+            
+            // Step 2: Fetch real-time exchange rates from the API
+            String apiKey = "YOUR_API_KEY"; // Replace with your API key
+            String apiUrl = "https://open.er-api.com/v6/latest/" + baseCurrency + "/" + apiKey;
+            URL url = new URL(apiUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            
+            BufferedReader apiReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            
+            while ((line = apiReader.readLine()) != null) {
+                response.append(line);
+            }
+            apiReader.close();
+            
+            JSONObject jsonResponse = new JSONObject(response.toString());
+            JSONObject rates = jsonResponse.getJSONObject("rates");
+            
+            // Step 3: Take input from the user for the amount to convert
+            System.out.print("Enter the amount to convert: ");
+            double amount = Double.parseDouble(reader.readLine());
+            
+            // Step 4: Convert the input amount using the fetched exchange rate
+            double exchangeRate = rates.getDouble(targetCurrency);
+            double convertedAmount = amount * exchangeRate;
+            
+            // Step 5: Display the result
+            System.out.println(amount + " " + baseCurrency + " is equal to " + convertedAmount + " " + targetCurrency);
+            
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+}
+
